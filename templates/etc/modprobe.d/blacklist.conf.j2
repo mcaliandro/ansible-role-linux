@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+
+{% for entry in linux_modprobe_blacklist %}
+{%- set module = entry.name | default(entry) %}
+blacklist {{ module }}
+install {{ module }} /bin/false
+{% endfor %}

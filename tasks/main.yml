@@ -1,0 +1,72 @@
+---
+
+- name: Manage packages installation and removal
+  ansible.builtin.package:
+    name: "{{ item.name | default(item) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ linux_packages }}"
+  when: linux_packages | length > 0
+
+- name: Get info about installed packages
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: Include assert tasks
+  ansible.builtin.include_tasks: assert.yml
+
+- name: Include tasks to remove snapd on Ubuntu host
+  ansible.builtin.include_tasks: remove_snapd.yml
+  when:
+    - ansible_facts.distribution == "Ubuntu"
+    - "'snapd' in ansible_facts.packages"
+    - linux_remove_snapd
+
+- name: Setup hostname
+  ansible.builtin.hostname:
+    name: "{{ linux_hostname }}"
+  notify: Reboot
+  when: linux_hostname | length > 0
+
+- name: Include tasks to configure disks and partitions
+  ansible.builtin.include_tasks: disks.yml
+  loop: "{{ linux_disks }}"
+  loop_control:
+    label: "{{ disk.device }}"
+    loop_var: disk
+  when: linux_disks | length > 0
+
+- name: Include tasks to disable swap space
+  ansible.builtin.include_tasks: disable_swap.yml
+  when: linux_disable_swap
+
+- name: Include tasks to configure swap file
+  ansible.builtin.include_tasks: swapfile.yml
+  when: 
+    - linux_swapfile | length > 0
+    - not linux_disable_swap
+
+- name: Include tasks to manage kernel modules
+  ansible.builtin.include_tasks: modprobe.yml
+
+- name: Setup kernel parameters using sysctl
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_file: "{{ linux_sysctl_config_file }}"
+  with_dict: "{{ linux_sysctl_params }}"
+  when: linux_sysctl_params | length > 0
+
+- name: Upload custom sysctl dropin files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/sysctl.d/{{ item | basename }}"
+  loop: "{{ linux_sysctl_dropin_files }}"
+  when: linux_sysctl_dropin_files | length > 0
+
+- name: Schedule reboot if explicitly required
+  ansible.builtin.debug:
+    msg: "Variable 'linux_force_reboot' is set to 'true', scheduling reboot"
+  changed_when: true
+  notify: Reboot
+  when: linux_force_reboot | bool

@@ -1,0 +1,49 @@
+---
+
+# Whether to reboot the machine at the end of this role's execution.
+linux_force_reboot: false
+
+# Specify the list of packages to install.
+# To remove packages, use the field `state=absent`.
+# Example:
+#   linux_packages:
+#     - { name: pkg_name, state: absent }
+linux_packages: []
+
+# Whether to remove or not snapd on Ubuntu host.
+linux_remove_snapd: false
+
+# Setup the hostname on the host.
+linux_hostname: ""
+
+# Specify the storage configuration: for each attached disk provide the list
+# of partitions to be created, formatted and mounted on the host.
+linux_disks: []
+
+# Whether to disable swap space or not.
+# NOTE: when `true` and swap file is not configured yet, the tasks for
+#       configuring a swap file will be skipped.
+linux_disable_swap: false
+
+# Create and configure a swap file on the host.
+linux_swapfile: {}
+
+# Specify the list of kernel modules to load.
+# To provide also module parameters, use the field `params`.
+# Example:
+#   linux_modprobe_load:
+#     - { name: mod_name, params: "comma_separated_params" }
+linux_modprobe_load: []
+
+# Specify the list of kernel modules to blacklist.
+linux_modprobe_blacklist: []
+
+# Specify the absolute path to the default `sysctl` configuration file.
+# Key-values in `linux_sysctl_params` dictionary will be stored here.
+linux_sysctl_config_file: /etc/sysctl.conf
+
+# Specify the kernel parameters with their values as key-value entries.
+linux_sysctl_params: {}
+
+# Specify the custom dropin files to upload on the remote host.
+linux_sysctl_dropin_files: []

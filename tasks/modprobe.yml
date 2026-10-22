@@ -1,0 +1,28 @@
+---
+
+- name: "Modprobe: activate kernel modules"
+  community.general.modprobe:
+    name: "{{ item.name | default(item) }}"
+    params: "{{ item.params | default(item.params) }}"
+    persistent: present
+    state: present
+  loop: "{{ linux_modprobe_load }}"
+  when: linux_modprobe_load | length > 0
+
+- name: "Modprobe: blacklist kernel modules"
+  block:
+    - name: "Modprobe: update blacklist configuration file"
+      ansible.builtin.template:
+        src: etc/modprobe.d/blacklist.conf.j2
+        dest: /etc/modprobe.d/blacklist.conf
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: "Modprobe: unload blacklisted modules"
+      community.general.modprobe:
+        name: "{{ item }}"
+        persistent: absent
+        state: absent
+      loop: "{{ linux_modprobe_blacklist }}"
+  when: linux_modprobe_blacklist | length > 0

@@ -1,0 +1,46 @@
+---
+
+- name: "Partitions: setup automount flag"
+  ansible.builtin.set_fact:
+    automount_flag: "{{ part.automount | default(true) }}"
+
+- name: "Partitions: check mandatory fields"
+  ansible.builtin.assert:
+    that:
+      - part.name is defined
+      - part.name is regex('^[a-zA-Z0-9-]+$')
+      - part.number is defined
+      - part.number is regex('^\d$')
+      - part.fs_type is defined
+      - part.fs_type in linux_supported_partition_filesystems
+    quiet: true
+
+- name: "Partitions: check mount path if automount flag is true"
+  ansible.builtin.assert:
+    that: part.mount_path is defined
+  when: automount_flag
+
+- name: "Partitions: create new partition"
+  community.general.parted:
+    device: "{{ device }}"
+    label: "{{ part_table_type }}"
+    number: "{{ part.number }}"
+    part_start: "{{ part.start | default('0%') }}"
+    part_end: "{{ part.end | default('100%') }}"
+    state: present
+
+- name: "Partitions: create filesystem on partition"
+  community.general.filesystem:
+    dev: "{{ device }}{{ part.number }}"
+    label: "{{ part.name }}"
+    fstype: "{{ part.fs_type }}"
+    opts: "{{ part.fs_opts | default(omit) }}"
+
+- name: "Partitions: automount using fstab"
+  ansible.posix.mount:
+    path: "{{ part.mount_path }}"
+    src: "{{ device }}{{ part.number }}"
+    fstype: "{{ part.fs_type }}"
+    opts: "{{ part.mount_opts | default('defaults') }}"
+    state: mounted
+  when: automount_flag

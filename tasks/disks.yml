@@ -1,0 +1,30 @@
+---
+
+- name: "Disks: initialize variable 'part_table_type' using default value"
+  ansible.builtin.set_fact:
+    part_table_type: "{{ disk.part_table_type | default('gpt') }}"
+
+- name: "Disks: check mandatory fields"
+  ansible.builtin.assert:
+    that:
+      - disk.device is defined
+      - disk.device is regex('^/dev/[hsv]{1}d[a-z]{1}$')
+      - part_table_type in linux_supported_partition_table_types
+      - disk.partitions is defined
+      - disk.partitions | length > 0
+    quiet: true
+
+- name: "Disks: check if device is attached to the host"
+  ansible.builtin.stat:
+    path: "{{ disk.device }}"
+  register: check_device
+
+- name: "Disks: include partitions tasks"
+  ansible.builtin.include_tasks: partitions.yml
+  loop: "{{ disk.partitions }}"
+  loop_control:
+    label: "{{ part.name }}"
+    loop_var: part
+  vars:
+    device: "{{ disk.device }}"
+  when: check_device.stat.exists

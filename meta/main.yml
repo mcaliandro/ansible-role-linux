@@ -1,0 +1,30 @@
+galaxy_info:
+  author: mcaliandro
+  description: Generic management of Linux, like packages, partitions, swap, kernel settings and modules, etc.
+  role_name: linux
+
+  license: Apache-2.0
+
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: Debian
+      versions:
+        - bookworm
+        - trixie
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+        - resolute
+
+  galaxy_tags:
+    - linux
+    - system
+    - packages
+    - partitions
+    - swap
+    - modprobe
+    - sysctl
+
+dependencies: []
