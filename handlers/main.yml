@@ -2,3 +2,8 @@
 
 - name: Reboot
   ansible.builtin.reboot:
+
+- name: Restart SSH
+  ansible.builtin.systemd_service:
+    name: "{{ linux_ssh_service_name }}"
+    state: restarted

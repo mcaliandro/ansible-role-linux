@@ -72,6 +72,20 @@ linux_packages:
   - nginx
 ```
 
+### Configure OpenSSH server
+
+```yaml
+linux_sshd_config: {}
+```
+
+```yaml
+linux_sshd_config_file: /etc/ssh/sshd_config.d/10-my-custom.conf
+```
+
+```yaml
+linux_sshd_config_dropin_files: []
+```
+
 ### Manage storage: disks and partitions
 Use the `linux_disks` list to specify the partitioning structure to be applied on each attached disk.
 
@@ -185,16 +199,17 @@ Use the variable `linux_sysctl_config_file` to override the absolute path to the
 
 For example:
 ```yaml
-linux_sysctl_config_file: /etc/sysctl.d/99-my-custom.conf
+linux_sysctl_config_file: /etc/sysctl.d/90-custom.conf
 ```
 
 In case you need to organize many kernel parameters using dropin files, use the list `linux_sysctl_dropin_files` to specify the path to the dropin files to be uploaded to the remote host.
 
 For example:
 ```yaml
-linux_sysctl_dropin_files:
-  - "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/sysctl.d/10-my-security.conf"
-  - "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/sysctl.d/90-my-tuning.conf"
+linux_sysctl_config_dropin_files:
+  - "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/sysctl.d/10-security.conf"
+  - path: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/sysctl.d/90-tuning.conf"
+    state: absent
 ```
 
 

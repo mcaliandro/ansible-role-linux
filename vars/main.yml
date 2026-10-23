@@ -1,7 +1,9 @@
 ---
 
-linux_required_storage_packages: [parted, e2fsprogs]
-linux_optional_storage_packages: [resizepart, btrfs-progs, dosfstools]
+linux_required_ssh_packages: [openssh-server]
+
+linux_required_storage_packages: [e2fsprogs, parted, util-linux]
+linux_optional_storage_packages: [btrfs-progs, dosfstools]
 
 linux_supported_partition_table_types: [gpt, msdos]
 linux_supported_partition_filesystems: [btrfs, ext2, ext4, vfat]

@@ -16,6 +16,22 @@ linux_remove_snapd: false
 # Setup the hostname on the host.
 linux_hostname: ""
 
+# Specify the absolute path to the default `sshd_config` file.
+# This can be a dropin file within the path '/etc/ssh/sshd_config.d/'.
+# Key-values in `linux_sshd_config` dictionary will be stored here.
+linux_sshd_config_file: /etc/ssh/sshd_config
+
+# Specify the sshd parameters with their values as key-value entries.
+linux_sshd_config: {}
+
+# Specify the custom sshd_config dropin files to upload on the remote host.
+# To remove dropin files from the remote host, use the field `state=absent`
+# Example:
+#   linux_sshd_config_dropin_files:
+#     - file: 90-custom.conf
+#       state: absent
+linux_sshd_config_dropin_files: []
+
 # Specify the storage configuration: for each attached disk provide the list
 # of partitions to be created, formatted and mounted on the host.
 linux_disks: []
@@ -45,5 +61,10 @@ linux_sysctl_config_file: /etc/sysctl.conf
 # Specify the kernel parameters with their values as key-value entries.
 linux_sysctl_params: {}
 
-# Specify the custom dropin files to upload on the remote host.
-linux_sysctl_dropin_files: []
+# Specify the custom sysctl dropin files to upload on the remote host.
+# To remove dropin files from the remote host, use the field `state=absent`
+# Example:
+#   linux_sysctl_config_dropin_files:
+#     - file: 90-custom.conf
+#       state: absent
+linux_sysctl_config_dropin_files: []

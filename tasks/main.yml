@@ -1,5 +1,8 @@
 ---
 
+- name: Include OS specific variables
+  ansible.builtin.include_vars: "vars/{{ ansible_fact.os_family }}.yml"
+
 - name: Manage packages installation and removal
   ansible.builtin.package:
     name: "{{ item.name | default(item) }}"
@@ -26,6 +29,22 @@
     name: "{{ linux_hostname }}"
   notify: Reboot
   when: linux_hostname | length > 0
+
+- name: Manage configuration of SSH server
+  ansible.builtin.lineinfile:
+    path: "{{ linux_sshd_config_file }}"
+    regexp: '^#?{{ item.key }}'
+    line: '{{ item.key }} {{ item.value }}'
+    validate: /usr/sbin/sshd -t -f %s
+  with_dict: "{{ linux_sshd_config }}"
+  notify: Restart SSH
+  when: linux_sshd_config | length > 0
+
+- name: Include tasks to upload custom sshd dropin files
+  ansible.builtin.include_tasks: sshd_dropin.yml
+  loop: "{{ linux_sshd_config_dropin_files }}"
+  notify: Restart SSH
+  when: linux_sshd_config_dropin_files | length > 0
 
 - name: Include tasks to configure disks and partitions
   ansible.builtin.include_tasks: disks.yml
@@ -57,12 +76,10 @@
   with_dict: "{{ linux_sysctl_params }}"
   when: linux_sysctl_params | length > 0
 
-- name: Upload custom sysctl dropin files
-  ansible.builtin.copy:
-    src: "{{ item }}"
-    dest: "/etc/sysctl.d/{{ item | basename }}"
-  loop: "{{ linux_sysctl_dropin_files }}"
-  when: linux_sysctl_dropin_files | length > 0
+- name: Include tasks to manage custom sysctl dropin files
+  ansible.builtin.include_tasks: sysctl_dropin.yml
+  loop: "{{ linux_sysctl_config_dropin_files }}"
+  when: linux_sysctl_config_dropin_files | length > 0
 
 - name: Schedule reboot if explicitly required
   ansible.builtin.debug:

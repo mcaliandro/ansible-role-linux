@@ -1,0 +1,20 @@
+---
+
+- name: "sysctl dropin: setup remove flag"
+  ansible.builtin.set_fact:
+    remove_file: "{{ true (item.state is defined) and (item.state == 'absent') else false }}"
+
+- name: "sysctl dropin: remove dropin file"
+  ansible.builtin.file:
+    path: "/etc/sysctl.d/{{ item.file | basename }}"
+    state: absent
+  when: remove_file
+
+- name: "sysctl dropin: upload dropin file"
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/sysctl.d/{{ item | basename }}"
+    owner: root
+    group: root
+    mode: "0644"
+  when: not remove_file

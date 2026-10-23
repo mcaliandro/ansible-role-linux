@@ -1,0 +1,21 @@
+---
+
+- name: "sshd dropin: setup remove flag"
+  ansible.builtin.set_fact:
+    remove_file: "{{ true (item.state is defined) and (item.state == 'absent') else false }}"
+
+- name: "sshd dropin: remove dropin file"
+  ansible.builtin.file:
+    path: "/etc/ssh/sshd_config.d/{{ item.file | basename }}"
+    state: absent
+  when: remove_file
+
+- name: "sshd dropin: upload dropin file"
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/ssh/sshd_config.d/{{ item | basename }}"
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/sbin/sshd -t -f %s
+  when: not remove_file

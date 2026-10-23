@@ -1,6 +1,16 @@
 ---
 
-- name: "Assert: check required packages for storage configuration tasks"
+- name: "Assert: check required packages for SSH server configuration"
+  ansible.builtin.assert:
+    that: item in ansible_facts.packages
+    fail_msg: |
+      Warning: {{ item }} package is required by SSH server configuration tasks.
+      Tip: you can use the role variable 'linux_packages' to add '{{ item }}' to the list of packages to be installed.
+    quiet: true
+  loop: "{{ linux_required_ssh_packages }}"
+  when: linux_disks | length > 0
+
+- name: "Assert: check required packages for storage configuration"
   ansible.builtin.assert:
     that: item in ansible_facts.packages
     fail_msg: |
@@ -10,7 +20,7 @@
   loop: "{{ linux_required_storage_packages }}"
   when: linux_disks | length > 0
 
-- name: "Debug: show info about optional package for storage configuration tasks"
+- name: "Debug: show info about optional package for storage configuration"
   ansible.builtin.debug:
     msg:
       - "Info: {{ item }} package is optional but may be required by storage configuration tasks."
