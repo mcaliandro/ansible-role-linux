@@ -54,8 +54,6 @@ linux_remove_snapd: false
 Use the list `linux_packages` to specify the packages to be installed or removed.
 This role uses [ansible.builtin.package](https://docs.ansible.com/projects/ansible/latest/collections/ansible/builtin/package_module.html) module to manage packages without the need to specify the package manager module (`apt`, `dnf`, etc.).
 
-To install packages, you can just list their names and then the role applies `state=present` field by default.
-
 For example:
 ```yaml
 linux_packages:
@@ -63,7 +61,7 @@ linux_packages:
   - python3-pip
 ```
 
-If you need to remove a package, you need to specify both `name=<pkg_name>` and `state=absent` fields.
+If you need to remove a package, you need to specify both `name=PACKAGE_NAME` and `state=absent` fields.
 In this example, the role removes `httpd` package first and then installs `nginx` package:
 ```yaml
 linux_packages:
@@ -72,18 +70,35 @@ linux_packages:
   - nginx
 ```
 
-### Configure OpenSSH server
+### Configure OpenSSH server (`sshd_config`)
+Use the dictionary `linux_sshd_config` to specify the sshd parameters and their values as key-value entries.
 
+For example:
 ```yaml
-linux_sshd_config: {}
+linux_sshd_config:
+  PermitRootLogin: "no"
+  PasswordAuthentication: "no"
+  PubkeyAuthentication: "yes"
 ```
 
+These entries will be stored into the default `sshd_config` file, which path is `/etc/ssh/sshd_config`.
+The variable `linux_sshd_config_file` allows you specify a different destination file (for example, an existing dropin file) in order to keep the default configuration file untouched.
+
+For example:
 ```yaml
 linux_sshd_config_file: /etc/ssh/sshd_config.d/10-my-custom.conf
 ```
 
+If you prefer to upload `sshd_config` dropin files to the remote host, specify them using the list `linux_sshd_config_dropin_files`.
+You can store your dropin files within `files/` directory of this role, or in a sub-path of your Ansible project's `inventory_dir` path.
+Dropin files on the remote host can be removed by specifying both `file=FILENAME` and `state=absent` fields.
+
+In this example, custom dropin file `00-override.conf` is uploaded into `/etc/ssh/sshd_config.d/` directory, while `50-cloud-init.conf` is removed from the same directory:
 ```yaml
-linux_sshd_config_dropin_files: []
+linux_sshd_config_dropin_files:
+  - "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/sshd_config.d/00-override.conf"
+  - file: "50-cloud-init.conf"
+    state: absent
 ```
 
 ### Manage storage: disks and partitions
@@ -145,7 +160,7 @@ linux_disable_swap: false
 
 Use the dictionary `linux_swapfile` to create and configure a swap file on the host.
 Here, a description of the supported fields:
-- `path`: absolute path to the swap file - if unsure, use `/swapfile`);
+- `path`: absolute path to the swap file - if unsure, use `/swapfile`;
 - `size_mb`: size in MB of the swap file;
 - `mount_opts` (optional): specify the fstab options - if not defined, fstab entry is configured with `defaults` option only.
 
@@ -167,13 +182,13 @@ linux_modprobe_load:
   - br_netfilter
 ```
 
-If you need to specify also the module's parameters, use the field `params`.
+If you need to specify also the module's parameters, use the field `params` (see `community.general.modprobe` module's parameter called [params](https://docs.ansible.com/projects/ansible/latest/collections/community/general/modprobe_module.html#parameter-params)).
 
-For Example:
+For example:
 ```yaml
 linux_modprobe_load:
-  - name: "mod_name"
-    params: "comma_separated_params"
+  - name: MODULE_NAME
+    params: COMMA_SEPARATED_PARAMS
 ```
 
 Use the list `linux_modprobe_blacklist` to specify the kernel modules to be loaded on the host.
@@ -195,20 +210,23 @@ linux_sysctl_params:
   net.ipv6.conf.all.forwarding: "1"
 ```
 
-Use the variable `linux_sysctl_config_file` to override the absolute path to the default `sysctl` configuration file, which is `/etc/sysctl.conf`.
+These entries will be stored into the default `sysctl.conf` file, which path is `/etc/sysctl.conf`.
+The variable `linux_sysctl_config_file` allows you specify a different destination file (for example, an existing dropin file) in order to keep the default `sysctl.conf` file untouched.
 
 For example:
 ```yaml
 linux_sysctl_config_file: /etc/sysctl.d/90-custom.conf
 ```
 
-In case you need to organize many kernel parameters using dropin files, use the list `linux_sysctl_dropin_files` to specify the path to the dropin files to be uploaded to the remote host.
+If your prefer to upload custom `sysctl` dropin files to the remote host, specify them using the list `linux_sysctl_config_dropin_files`.
+You can store your dropin files within `files/` directory of this role, or in a sub-path of your Ansible project's `inventory_dir` path.
+Dropin files on the remote host can be removed by specifying both `file=FILENAME` and `state=absent` fields.
 
-For example:
+In this example, custom dropin file `10-security.conf` is uploaded into `/etc/sysctl.d/` directory, while `99-tuning.conf` is removed from the same directory:
 ```yaml
 linux_sysctl_config_dropin_files:
   - "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/sysctl.d/10-security.conf"
-  - path: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/sysctl.d/90-tuning.conf"
+  - file: "99-tuning.conf"
     state: absent
 ```
 
