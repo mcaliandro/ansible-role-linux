@@ -1,37 +1,41 @@
 ---
 
+- name: "Swap file: setup path"
+  ansible.builtin.set_fact:
+    swapfile_path: "{{ linux_swapfile.path | default(linux_swapfile_default_path) }}"
+
 - name: "Swap file: check if already exists"
   ansible.builtin.stat:
-    path: "{{ linux_swapfile.path }}"
+    path: "{{ swapfile_path }}"
   register: swapfile
 
 - name: "Swap file: create and configure only if not done yet"
   block:
     - name: "Swap file: create using dd command"
       ansible.builtin.shell: |
-        dd if=/dev/zero of={{ linux_swapfile.path }} bs=1M count={{ linux_swapfile.size_mb }}
+        dd if=/dev/zero of={{ swapfile_path }} bs=1M count={{ linux_swapfile.size_mb }}
       args:
-        creates: "{{ linux_swapfile.path }}"
+        creates: "{{ swapfile_path }}"
 
     - name: "Swap file: set correct permissions"
       ansible.builtin.file:
-        path: "{{ linux_swapfile.path }}"
+        path: "{{ swapfile_path }}"
         owner: root
         group: root
         mode: "0600"
 
     - name: "Swap file: format using 'mkswap' command"
       ansible.builtin.shell: |
-        mkswap {{ linux_swapfile.path }}
+        mkswap {{ swapfile_path }}
 
     - name: "Swap file: enable using 'swapon' command"
       ansible.builtin.shell: |
-        swapon {{ linux_swapfile.path }}
+        swapon {{ swapfile_path }}
 
     - name: "Swap file: persist across reboots using a fstab entry"
       ansible.posix.mount:
         path: none
-        src: "{{ linux_swapfile.path }}"
+        src: "{{ swapfile_path }}"
         fstype: swap
         opts: "{{ linux_swapfile.mount_opts | default('defaults') }}"
         state: present

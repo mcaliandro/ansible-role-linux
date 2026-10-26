@@ -16,12 +16,9 @@ linux_remove_snapd: false
 # Setup the hostname on the host.
 linux_hostname: ""
 
-# Specify the absolute path to the default `sshd_config` file.
-# This can be a dropin file within the path '/etc/ssh/sshd_config.d/'.
-# Key-values in `linux_sshd_config` dictionary will be stored here.
-linux_sshd_config_file: /etc/ssh/sshd_config
-
 # Specify the sshd parameters with their values as key-value entries.
+# The entries will be stored into the default `sshd_config` file, which path
+# is '/etc/ssh/sshd_config'.
 linux_sshd_config: {}
 
 # Specify the custom sshd_config dropin files to upload on the remote host.
@@ -42,6 +39,8 @@ linux_disks: []
 linux_disable_swap: false
 
 # Create and configure a swap file on the host.
+# Example:
+#   linux_swapfile: { size_mb: 4096 }
 linux_swapfile: {}
 
 # Specify the list of kernel modules to load.
@@ -54,11 +53,9 @@ linux_modprobe_load: []
 # Specify the list of kernel modules to blacklist.
 linux_modprobe_blacklist: []
 
-# Specify the absolute path to the default `sysctl` configuration file.
-# Key-values in `linux_sysctl_params` dictionary will be stored here.
-linux_sysctl_config_file: /etc/sysctl.conf
-
 # Specify the kernel parameters with their values as key-value entries.
+# The entries will be stored into the default `sysctl` file, which path is
+# '/etc/sysctl.conf'.
 linux_sysctl_params: {}
 
 # Specify the custom sysctl dropin files to upload on the remote host.

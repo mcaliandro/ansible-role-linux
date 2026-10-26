@@ -7,3 +7,7 @@ linux_optional_storage_packages: [btrfs-progs, dosfstools]
 
 linux_supported_partition_table_types: [gpt, msdos]
 linux_supported_partition_filesystems: [btrfs, ext2, ext4, vfat]
+
+linux_sshd_default_config_file: /etc/ssh/sshd_config
+linux_swapfile_default_path: /swapfile
+linux_sysctl_default_config_file: /etc/sysctl.conf

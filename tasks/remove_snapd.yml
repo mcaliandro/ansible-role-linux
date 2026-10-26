@@ -34,8 +34,9 @@
 - name: "Remove snapd: remove and prune apt package"
   ansible.builtin.apt:
     name: snapd
-    state: purge
+    state: absent
     autoremove: true
+    purge: true
   notify: Reboot
 
 - name: "Remove snapd: prevent snapd installation through apt command"

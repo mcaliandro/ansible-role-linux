@@ -1,7 +1,7 @@
 ---
 
 - name: Include OS specific variables
-  ansible.builtin.include_vars: "vars/{{ ansible_fact.os_family }}.yml"
+  ansible.builtin.include_vars: "vars/{{ ansible_facts.os_family }}.yml"
 
 - name: Manage packages installation and removal
   ansible.builtin.package:
@@ -32,7 +32,7 @@
 
 - name: Manage configuration of SSH server
   ansible.builtin.lineinfile:
-    path: "{{ linux_sshd_config_file }}"
+    path: "{{ linux_sshd_default_config_file }}"
     regexp: '^#?{{ item.key }}'
     line: '{{ item.key }} {{ item.value }}'
     validate: /usr/sbin/sshd -t -f %s
@@ -43,7 +43,6 @@
 - name: Include tasks to upload custom sshd dropin files
   ansible.builtin.include_tasks: sshd_dropin.yml
   loop: "{{ linux_sshd_config_dropin_files }}"
-  notify: Restart SSH
   when: linux_sshd_config_dropin_files | length > 0
 
 - name: Include tasks to configure disks and partitions
@@ -72,7 +71,7 @@
     name: "{{ item.key }}"
     value: "{{ item.value }}"
     state: present
-    sysctl_file: "{{ linux_sysctl_config_file }}"
+    sysctl_file: "{{ linux_sysctl_default_config_file }}"
   with_dict: "{{ linux_sysctl_params }}"
   when: linux_sysctl_params | length > 0
 
@@ -81,9 +80,7 @@
   loop: "{{ linux_sysctl_config_dropin_files }}"
   when: linux_sysctl_config_dropin_files | length > 0
 
-- name: Schedule reboot if explicitly required
-  ansible.builtin.debug:
-    msg: "Variable 'linux_force_reboot' is set to 'true', scheduling reboot"
-  changed_when: true
-  notify: Reboot
+- name: Reboot if explicitly required
+  ansible.builtin.reboot:
+    msg: "Variable 'linux_force_reboot' is set to 'true', rebooting"
   when: linux_force_reboot | bool

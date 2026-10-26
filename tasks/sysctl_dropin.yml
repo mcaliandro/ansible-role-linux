@@ -2,7 +2,7 @@
 
 - name: "sysctl dropin: setup remove flag"
   ansible.builtin.set_fact:
-    remove_file: "{{ true (item.state is defined) and (item.state == 'absent') else false }}"
+    remove_file: "{{ true if (item.state is defined) and (item.state == 'absent') else false }}"
 
 - name: "sysctl dropin: remove dropin file"
   ansible.builtin.file:

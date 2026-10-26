@@ -72,6 +72,7 @@ linux_packages:
 
 ### Configure OpenSSH server (`sshd_config`)
 Use the dictionary `linux_sshd_config` to specify the sshd parameters and their values as key-value entries.
+These entries will be stored into the default `sshd_config` file, which path is `/etc/ssh/sshd_config` (see the variable `linux_sshd_default_config_file` in `vars/main.yml`).
 
 For example:
 ```yaml
@@ -79,14 +80,6 @@ linux_sshd_config:
   PermitRootLogin: "no"
   PasswordAuthentication: "no"
   PubkeyAuthentication: "yes"
-```
-
-These entries will be stored into the default `sshd_config` file, which path is `/etc/ssh/sshd_config`.
-The variable `linux_sshd_config_file` allows you specify a different destination file (for example, an existing dropin file) in order to keep the default configuration file untouched.
-
-For example:
-```yaml
-linux_sshd_config_file: /etc/ssh/sshd_config.d/10-my-custom.conf
 ```
 
 If you prefer to upload `sshd_config` dropin files to the remote host, specify them using the list `linux_sshd_config_dropin_files`.
@@ -160,8 +153,8 @@ linux_disable_swap: false
 
 Use the dictionary `linux_swapfile` to create and configure a swap file on the host.
 Here, a description of the supported fields:
-- `path`: absolute path to the swap file - if unsure, use `/swapfile`;
-- `size_mb`: size in MB of the swap file;
+- `path` (optional): absolute path to the swap file; if not defined, the default path `/swapfile` is used (see the variable `linux_swapfile_default_path` in `vars/main.yml`);
+- `size_mb` (mandatory): size in MB of the swap file;
 - `mount_opts` (optional): specify the fstab options - if not defined, fstab entry is configured with `defaults` option only.
 
 For example:
@@ -201,6 +194,7 @@ linux_modprobe_blacklist:
 
 ### Manage kernel settings (`sysctl`)
 Use the dictionary `linux_sysctl_params` to specify the kernel parameters and their values as key-value entries.
+These entries will be stored into the default `sysctl.conf` file, which path is `/etc/sysctl.conf` (see the variable `linux_sysctl_default_config_file` in `vars/main.yml`).
 
 For example:
 ```yaml
@@ -208,14 +202,6 @@ linux_sysctl_params:
   net.ipv4.ip_forward: "1"
   net.ipv4.conf.all.forwarding: "1"
   net.ipv6.conf.all.forwarding: "1"
-```
-
-These entries will be stored into the default `sysctl.conf` file, which path is `/etc/sysctl.conf`.
-The variable `linux_sysctl_config_file` allows you specify a different destination file (for example, an existing dropin file) in order to keep the default `sysctl.conf` file untouched.
-
-For example:
-```yaml
-linux_sysctl_config_file: /etc/sysctl.d/90-custom.conf
 ```
 
 If your prefer to upload custom `sysctl` dropin files to the remote host, specify them using the list `linux_sysctl_config_dropin_files`.
