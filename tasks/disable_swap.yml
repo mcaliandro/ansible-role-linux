@@ -2,22 +2,11 @@
 
 - name: "Disable swap: get list of active swap"
   ansible.builtin.shell: |
-    swapon -s | awk 'NR>1 {print $1}'
+    swapon -s | awk 'NR>1 && NF>0 {print $1}'
   register: swap_list_cmd
 
 - name: "Disable swap: disable only if active"
   block:
-    - name: "Disable snapd: convert 'swapon -s' command output to a native list"
-      ansible.builtin.set_fact:
-        swap_list: >-
-          {%- set array = [] -%}
-          {%- for line in swap_list_cmd.stdout_lines -%}
-          {%-   if line | length > 0 -%}
-          {%-     set _ = array.append(line) -%}
-          {%-   endif -%}
-          {%- endfor -%}
-          {{ array }}
-
     - name: "Disable swap: disable all active swap"
       ansible.builtin.shell: swapoff -a
       notify: Reboot
@@ -27,5 +16,5 @@
         path: none  
         src: "{{ item }}"
         state: absent
-      loop: "{{ swap_list }}"
-  when: swap_list_cmd.stdout | length > 0
+      loop: "{{ swap_list_cmd.stdout_lines }}"
+  when: swap_list_cmd.stdout_lines | length > 0

@@ -59,9 +59,7 @@
 
 - name: Include tasks to configure swap file
   ansible.builtin.include_tasks: swapfile.yml
-  when: 
-    - linux_swapfile | length > 0
-    - not linux_disable_swap
+  when: linux_swapfile | length > 0
 
 - name: Include tasks to manage kernel modules
   ansible.builtin.include_tasks: modprobe.yml
@@ -80,7 +78,12 @@
   loop: "{{ linux_sysctl_config_dropin_files }}"
   when: linux_sysctl_config_dropin_files | length > 0
 
-- name: Reboot if explicitly required
-  ansible.builtin.reboot:
-    msg: "Variable 'linux_force_reboot' is set to 'true', rebooting"
+- name: Schedule reboot if explicitly required
+  ansible.builtin.debug:
+    msg: "Variable 'linux_force_reboot' is set to 'true', scheduling reboot"
+  changed_when: true
+  notify: Reboot
   when: linux_force_reboot | bool
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers

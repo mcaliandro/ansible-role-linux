@@ -114,19 +114,19 @@ linux_disks:
         mount_opts: defaults
 ```
 
-For each *disk* entry,  
+For each *linux_disks* entry,  
 - `device` (mandatory): the path of the device attached to the host, for example `/dev/sdb`;
-- `part_table_type` (optional): the type of partition table used on the disk, accepted values: `gpt` (default), `msdos`;
+- `part_table_type` (optional): the type of partition table used on the disk, accepted values: `gpt` (default), `msdos` (see the variable `linux_supported_partition_table_types` defined in `vars/main.yml`);
 - `partitions` (mandatory): the list of partitions to create on the disk.
 
-For each *partition* entry:
+For each *partitions* entry:
 - `name` (mandatory): the name to apply as label of the filesystem, for example `volume`;
 - `number` (mandatory): the number of partition device (must be incremental in case of multiple partitions on the disk);
 - `start` (optional): see `community.general.parted` module's parameter [part_start](https://docs.ansible.com/projects/ansible/latest/collections/community/general/parted_module.html#parameter-part_start);
 - `end` (optional): see `community.general.parted` module's parameter [part_end](https://docs.ansible.com/projects/ansible/latest/collections/community/general/parted_module.html#parameter-part_end);
-- `fs_type` (mandatory): which filesystem type the partition must be formatted with, accepted values: `btrfs`, `ext2`, `ext4`, `vfat`;
+- `fs_type` (mandatory): which filesystem type the partition must be formatted with, accepted values: `btrfs`, `ext2`, `ext4`, `vfat` (see the variable `linux_supported_partition_filesystems` defined in `vars/main.yml`);
 - `fs_opts` (optional): the options to be passed to `mkfs` command;
-- `automount` (optional): whether to add an entry in fstab or not, accepted values: `true` (default), `false`;
+- `automount` (optional): whether to add an entry in fstab (`automount=true`, default) or not (`automount=false`);
 - `mount_path` (required if `automount=true`): the mount point of the partition in fstab;
 - `mount_opts`: pass the list of comma-separated mount options to fstab.
 
@@ -141,28 +141,38 @@ linux_disks:
         mount_path: /mnt/data
 ```
 
-### Manage swap
-Setup the variable `linux_disable_swap=true` in order to disable the swap space on the host. This role does not free any swap partition or remove swap files.
+### Disable swap
+Setup the variable `linux_disable_swap=true` in order to disable the swap space on the host. This role does not free or remove any configured swap partition.
 
 By default, the value is set to `false`, so the role does not change the current swap configuration (whether it is active or not) on the host:
 ```yaml
 linux_disable_swap: false
 ```
 
-**NOTE**: When `linux_disable_swap=true` and swap file is not configured yet, the tasks for creating a swap file will be skipped.
-
+### Manage a swap file
 Use the dictionary `linux_swapfile` to create and configure a swap file on the host.
+
+**IMPORTANT**: This requires to setup variable `linux_disable_swap=false` (default), otherwise the configuration tasks will be skipped.
+
 Here, a description of the supported fields:
 - `path` (optional): absolute path to the swap file; if not defined, the default path `/swapfile` is used (see the variable `linux_swapfile_default_path` in `vars/main.yml`);
 - `size_mb` (mandatory): size in MB of the swap file;
-- `mount_opts` (optional): specify the fstab options - if not defined, fstab entry is configured with `defaults` option only.
+- `mount_opts` (optional): specify the fstab options; if not defined, fstab entry is configured with `defaults` option only;
+- `state` (optional): whether the swap file should be created (`state=present`, default) or not (`state=absent`).
 
-For example:
+A minimum required configuration is the following:
 ```yaml
 linux_swapfile:
-  path: /swapfile
   size_mb: 4096
-  mount_opts: "sw,pri=1"
+```
+
+**NOTE**: When `linux_disable_swap=true`, the swap file exists and `linux_swapfile.state=absent`, the role disables the swap space as planned and removes also the swap file.
+
+To remove the swap file from the host:
+```yaml
+linux_disable_swap: true
+linux_swapfile:
+  state: absent
 ```
 
 ### Manage kernel modules (`modprobe`)
@@ -181,7 +191,7 @@ For example:
 ```yaml
 linux_modprobe_load:
   - name: MODULE_NAME
-    params: COMMA_SEPARATED_PARAMS
+    params: "SPACE_SEPARATED_PARAMS"
 ```
 
 Use the list `linux_modprobe_blacklist` to specify the kernel modules to be loaded on the host.

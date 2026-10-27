@@ -25,4 +25,5 @@
         persistent: absent
         state: absent
       loop: "{{ linux_modprobe_blacklist }}"
+      notify: Reboot
   when: linux_modprobe_blacklist | length > 0

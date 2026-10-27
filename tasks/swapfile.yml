@@ -3,14 +3,32 @@
 - name: "Swap file: setup path"
   ansible.builtin.set_fact:
     swapfile_path: "{{ linux_swapfile.path | default(linux_swapfile_default_path) }}"
+    remove_swapfile: "{{ true if (linux_swapfile.state is defined) and (linux_swapfile.state == 'absent') else false }}"
 
 - name: "Swap file: check if already exists"
   ansible.builtin.stat:
     path: "{{ swapfile_path }}"
   register: swapfile
 
+- name: "Swap file: planned to be removed"
+  ansible.builtin.file:
+    path: "{{ swapfile_path }}"
+    state: absent
+  when:
+    - linux_disable_swap
+    - swapfile.stat.exists
+    - remove_swapfile
+
 - name: "Swap file: create and configure only if not done yet"
   block:
+    - name: "Swap file: checks on swap file size"
+      ansible.builtin.assert:
+        that:
+          - linux_swapfile.size_mb is defined
+          - linux_swapfile.size_mb | int > 0
+        quiet: true
+        fail_msg: "Error: 'linux_swapfile.size_mb' must be defined and its value must be an integer greater than 0."
+
     - name: "Swap file: create using dd command"
       ansible.builtin.shell: |
         dd if=/dev/zero of={{ swapfile_path }} bs=1M count={{ linux_swapfile.size_mb }}
@@ -39,4 +57,7 @@
         fstype: swap
         opts: "{{ linux_swapfile.mount_opts | default('defaults') }}"
         state: present
-  when: not swapfile.stat.exists
+  when:
+    - not linux_disable_swap
+    - not swapfile.stat.exists
+    - not remove_swapfile

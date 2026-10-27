@@ -3,6 +3,9 @@
 - name: Reboot
   ansible.builtin.reboot:
 
+- name: Reload sysctl
+  ansible.builtin.shell: sysctl --system
+
 - name: Restart SSH
   ansible.builtin.systemd_service:
     name: "{{ linux_ssh_service_name }}"

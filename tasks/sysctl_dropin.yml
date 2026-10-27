@@ -8,6 +8,7 @@
   ansible.builtin.file:
     path: "/etc/sysctl.d/{{ item.file | basename }}"
     state: absent
+  notify: Reload sysctl
   when: remove_file
 
 - name: "sysctl dropin: upload dropin file"
@@ -17,4 +18,5 @@
     owner: root
     group: root
     mode: "0644"
+  notify: Reload sysctl
   when: not remove_file

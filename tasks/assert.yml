@@ -1,21 +1,32 @@
 ---
 
+- name: "Assert: check required packages"
+  ansible.builtin.assert:
+    that: item in ansible_facts.packages
+    fail_msg: |
+      Error: {{ item }} package is not installed but it is required.
+      Tip: you can use the role's variable 'linux_packages' to add '{{ item }}' to the list of packages to be installed.
+    quiet: true
+  loop: "{{ linux_required_common_packages | union(linux_required_distro_packages) }}"
+
 - name: "Assert: check required packages for SSH server configuration"
   ansible.builtin.assert:
     that: item in ansible_facts.packages
     fail_msg: |
-      Warning: {{ item }} package is required by SSH server configuration tasks.
-      Tip: you can use the role variable 'linux_packages' to add '{{ item }}' to the list of packages to be installed.
+      Error: {{ item }} package is not installed but it is required by SSH server configuration tasks.
+      Tip: you can use the role's variable 'linux_packages' to add '{{ item }}' to the list of packages to be installed.
     quiet: true
   loop: "{{ linux_required_ssh_packages }}"
-  when: linux_disks | length > 0
+  when: >-
+    (linux_sshd_config | length > 0) or
+    (linux_sshd_config_dropin_files | length > 0)
 
 - name: "Assert: check required packages for storage configuration"
   ansible.builtin.assert:
     that: item in ansible_facts.packages
     fail_msg: |
-      Warning: {{ item }} package is required by storage configuration tasks.
-      Tip: you can use the role variable 'linux_packages' to add '{{ item }}' to the list of packages to be installed.
+      Error: {{ item }} package is not installed but it is required by storage configuration tasks.
+      Tip: you can use the role's variable 'linux_packages' to add '{{ item }}' to the list of packages to be installed.
     quiet: true
   loop: "{{ linux_required_storage_packages }}"
   when: linux_disks | length > 0
@@ -23,7 +34,7 @@
 - name: "Debug: show info about optional package for storage configuration"
   ansible.builtin.debug:
     msg:
-      - "Info: {{ item }} package is optional but may be required by storage configuration tasks."
-      - "Tip: you can use the role variable 'linux_packages' to add '{{ item }}' to the list of packages to be installed."
+      - "Warning: {{ item }} package is not installed, it is optional but may be required by storage configuration tasks."
+      - "Tip: you can use the role's variable 'linux_packages' to add '{{ item }}' to the list of packages to be installed."
   loop: "{{ linux_optional_storage_packages }}"
   when: linux_disks | length > 0

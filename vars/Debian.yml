@@ -1,3 +1,7 @@
 ---
 
+# Distribution-specific packages to be installed.
+linux_required_distro_packages: [procps]
+
+# Name of the systemd's SSH service in Debian.
 linux_ssh_service_name: ssh

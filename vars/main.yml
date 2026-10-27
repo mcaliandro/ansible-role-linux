@@ -1,13 +1,27 @@
 ---
 
+# Required packages for each Linux distribution.
+# see `linux_required_distro_packages` for distribution-specific packages.
+linux_required_common_packages: [coreutils, kmod, util-linux]
+
+# Required package for SSH server
 linux_required_ssh_packages: [openssh-server]
 
-linux_required_storage_packages: [e2fsprogs, parted, util-linux]
+# Required and optional packages for configuring disks and partitions.
+linux_required_storage_packages: [e2fsprogs, parted]
 linux_optional_storage_packages: [btrfs-progs, dosfstools]
 
+# List of supported partition table types, e.g., GPT and MBR (`msdos`).
 linux_supported_partition_table_types: [gpt, msdos]
-linux_supported_partition_filesystems: [btrfs, ext2, ext4, vfat]
 
+# List of supported filesystem types.
+linux_supported_filesystem_types: [btrfs, ext2, ext4, vfat]
+
+# Default location of SSH server configuration file.
 linux_sshd_default_config_file: /etc/ssh/sshd_config
-linux_swapfile_default_path: /swapfile
+
+# Default location of sysctl configuration file.
 linux_sysctl_default_config_file: /etc/sysctl.conf
+
+# Default location of swap file.
+linux_swapfile_default_path: /swapfile

@@ -22,11 +22,7 @@ linux_hostname: ""
 linux_sshd_config: {}
 
 # Specify the custom sshd_config dropin files to upload on the remote host.
-# To remove dropin files from the remote host, use the field `state=absent`
-# Example:
-#   linux_sshd_config_dropin_files:
-#     - file: 90-custom.conf
-#       state: absent
+# To remove dropin files from the remote host, use the field `state=absent`.
 linux_sshd_config_dropin_files: []
 
 # Specify the storage configuration: for each attached disk provide the list
@@ -47,7 +43,7 @@ linux_swapfile: {}
 # To provide also module parameters, use the field `params`.
 # Example:
 #   linux_modprobe_load:
-#     - { name: mod_name, params: "comma_separated_params" }
+#     - { name: "MODULE_NAME", params: "SPACE_SEPARATED_PARAMS" }
 linux_modprobe_load: []
 
 # Specify the list of kernel modules to blacklist.
@@ -59,9 +55,5 @@ linux_modprobe_blacklist: []
 linux_sysctl_params: {}
 
 # Specify the custom sysctl dropin files to upload on the remote host.
-# To remove dropin files from the remote host, use the field `state=absent`
-# Example:
-#   linux_sysctl_config_dropin_files:
-#     - file: 90-custom.conf
-#       state: absent
+# To remove dropin files from the remote host, use the field `state=absent`.
 linux_sysctl_config_dropin_files: []

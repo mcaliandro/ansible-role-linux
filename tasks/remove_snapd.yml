@@ -2,27 +2,14 @@
 
 - name: "Remove snapd: get list of installed snaps"
   ansible.builtin.shell: |
-    snap list | awk 'NR>1 {print $1}'
+    snap list | awk 'NR>1 && NF>0 {print $1}'
   register: snap_list_cmd
 
-- name: "Remove snapd: remove snaps only if installed"
-  block:
-    - name: "Remove snapd: convert 'snap list' command output to a native list"
-      ansible.builtin.set_fact:
-        snap_list: >-
-          {%- set array = [] -%}
-          {%- for line in snap_list_cmd.stdout_lines -%}
-          {%-   if line | length > 0 -%}
-          {%-     set _ = array.append(line) -%}
-          {%-   endif -%}
-          {%- endfor -%}
-          {{ array }}
-
-    - name: "Remove snapd: remove installed snaps"
-      ansible.builtin.shell: |
-        snap remove --purge {{ item }}
-      loop: "{{ snap_list }}"
-  when: not snap_list_cmd.stdout is search('No snaps are installed yet.')
+- name: "Remove snapd: remove installed snaps"
+  ansible.builtin.shell: |
+    snap remove --purge {{ item }}
+  loop: "{{ snap_list_cmd.stdout_lines }}"
+  when: snap_list_cmd.stdout_lines | length > 0
 
 - name: "Remove snapd: stop, disable and mask systemd service for snapd"
   ansible.builtin.systemd_service:

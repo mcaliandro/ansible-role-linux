@@ -1,3 +1,7 @@
 ---
 
+# Distribution-specific packages to be installed.
+linux_required_distro_packages: [procps-ng]
+
+# Name of the systemd's SSH service in RedHat.
 linux_ssh_service_name: sshd

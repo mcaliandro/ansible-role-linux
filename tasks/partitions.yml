@@ -12,7 +12,7 @@
       - part.number is defined
       - part.number is regex('^\d$')
       - part.fs_type is defined
-      - part.fs_type in linux_supported_partition_filesystems
+      - part.fs_type in linux_supported_filesystem_types
     quiet: true
 
 - name: "Partitions: check mount path if automount flag is true"
